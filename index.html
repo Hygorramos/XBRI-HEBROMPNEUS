@@ -532,12 +532,12 @@
 
     try {
       var list = JSON.parse(localStorage.getItem('hebrom_leads') || '[]');
-      list.push({ nome: nome, medida: sel.value, em: new Date().toISOString() });
+      list.push({ nome: nome, medida: sel.value, indicacao: (window.__IND||''), em: new Date().toISOString() });
       localStorage.setItem('hebrom_leads', JSON.stringify(list));
     } catch (x) {}
 
     var medida = sel.value === 'outra medida' ? 'outra medida' : 'a medida ' + sel.value;
-    var msg = 'Olá! Me chamo ' + nome + '. Quero a promoção DoubleKing 175/60R13 (R$ 199) na Hebrom Pneus, ' + medida + '.';
+    var msg = 'Olá! Me chamo ' + nome + '. Quero a promoção DoubleKing 175/60R13 (R$ 199) na Hebrom Pneus, ' + medida + '.' + (window.__IND ? ('\n\nIndicação: ' + window.__IND) : '');
     var waUrl = 'https://wa.me/' + ZAP + '?text=' + encodeURIComponent(msg);
     document.getElementById('waLink').href = waUrl;
     try { window.open(waUrl, '_blank', 'noopener'); } catch (x) {}
@@ -574,6 +574,24 @@
       _hero.addEventListener('mouseleave', function(){ _vis.style.transition='transform .4s ease'; _vis.style.transform=''; });
     }
   }catch(_e){}
+})();
+</script>
+<script>
+/* ===== Programa de indicação =====
+   Link do indicador: adicione ?ind=NOME no fim do endereço.
+   Ex: https://SEUSITE.com/?ind=joao   |   ?ind=maria
+   A página carimba "Indicação: NOME" na mensagem do WhatsApp (invisível pro cliente). */
+(function(){
+  var ind='';
+  try{ var p=new URLSearchParams(location.search); ind=(p.get('ind')||p.get('indicacao')||p.get('ref')||'').trim().slice(0,40); }catch(e){}
+  try{ if(ind){ localStorage.setItem('hebrom_ind', ind); } else { ind=localStorage.getItem('hebrom_ind')||''; } }catch(e){}
+  window.__IND=ind;
+  if(ind){
+    document.querySelectorAll('a[href*="wa.me/"]').forEach(function(a){
+      var h=a.getAttribute('href')||'';
+      if(h.indexOf('text=')>-1 && h.indexOf('Indica')===-1){ a.setAttribute('href', h + encodeURIComponent('\n\nIndicação: ' + ind)); }
+    });
+  }
 })();
 </script>
 </body>
